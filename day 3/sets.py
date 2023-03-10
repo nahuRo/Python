@@ -4,8 +4,8 @@
 mi_set = set([1,2,3,4,5,1,1,1,1,2,2,2])
 mi_set2 = {1,2,3,8}
 
+print((mi_set))
 print(mi_set2)
-print(len(mi_set))
 
 print(2 in mi_set)
 
