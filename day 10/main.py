@@ -31,7 +31,7 @@ enemigo_x = []
 enemigo_y = []
 enemigo_x_cambio = []
 enemigo_y_cambio = []
-cantidad_enemigos = 5
+cantidad_enemigos = 20
 
 for enemigo in range(cantidad_enemigos):
     img_enemigo.append(pygame.image.load("./day 10/enemigo.png"))
@@ -43,24 +43,26 @@ for enemigo in range(cantidad_enemigos):
 
 # variables de la bala
 img_bala = pygame.image.load("./day 10/bala.png")
-bala_x = 0 
-bala_y = 500
+bala_x = -100  # la bala empiza muy a la izq, fuera de lo "visible" en pantalla
+bala_y = 510
 bala_y_cambio = 4
 visibilidad_bala = False
 
 # variable de puntuacion
 puntaje = 0
 fuente = pygame.font.Font("freesansbold.ttf", 18)
-puntaje_x = 700
+puntaje_x = 690
 puntaje_y = 10
 
 # variable texto final del juego
-fuente_final = pygame.font.Font("freesansbold.ttf", 40)
-
+texto_font_final = pygame.font.Font("freesansbold.ttf", 60)
+score_font_final = pygame.font.Font("freesansbold.ttf", 40)
 
 # funcion para setear la posicion del player
 def player(x, y):
+    # EL BLIT SOLO RENDERIZA PERO NO QUIERE DECIR QUE NO ESTE EL OBJETO EN PANTALLA SI NO LO RENDERIZO, ESTA OCUPANDO EL ESPACIO QUE LE DEFINI PERO NO NECESARIAMENTE TIENE QUE ESTA VISIBLE
     pantalla.blit(img_player,(x, y)) # metodo para arrojar/renderizar a nuestro jugador en la pantalla
+    pass
 
 # funcion para setear la posicion del enemigo
 def enemigo(x, y, ene):
@@ -70,25 +72,36 @@ def enemigo(x, y, ene):
 def disparar_bala(x, y):
     global visibilidad_bala
     visibilidad_bala = True
-    pantalla.blit(img_bala,(x + 16, y + 10)) # le agrego esos valores para que la bala arranque del centro de la nave y no de abajo
+    pantalla.blit(img_bala,(x + 16, y + 50)) # le agrego esos valores para que la bala arranque del centro de la nave y no de abajo
 
 # funcion para detectar colisiones
-def colision(x_1, y_1, x_2, y_2):
+def colision(x_1, y_1, x_2, y_2, flag):
     distancia = math.sqrt(math.pow(x_2 - x_1, 2) + math.pow(y_2 - y_1, 2)) 
-    if distancia < 27:
-        return True
+    if flag == 'b':
+        if distancia < 27: # 27 es tamaño suf de nuestras figuras como para saber si hubo o no colision
+            return True
+        else:
+            return False
     else:
-        return False
+        if distancia < 60: # 27 es tamaño suf de nuestras figuras como para saber si hubo o no colision
+            return True
+        else:
+            return False
+                        
+
 
 # funcion para mostrar puntaje
 def mostrar_puntaje(x, y):
-    texto = fuente.render(f"Puntaje: {puntaje}", True, (255,255,255))
+    texto = fuente.render(f"Score: {puntaje}", True, (255,255,255))
     pantalla.blit(texto, (x,y))
 
 # funcion para mostrar el cartel de GAME OVER
 def texto_final():
-    mi_fuente_final = fuente_final.render(f"GAME OVER", True, (255,255,255))
-    pantalla.blit(mi_fuente_final, (60, 200))
+    GAME_OVER_text = texto_font_final.render(f"GAME OVER", True, (255,255,255))
+    SCORE_text = score_font_final.render(f"Score: {puntaje}", True, (255,255,255))
+
+    pantalla.blit(GAME_OVER_text, (220, 270))
+    pantalla.blit(SCORE_text, (315, 350))
 
 
 # loop para que no se cierre la pantalla
@@ -141,13 +154,27 @@ while se_ejecuta:
     # setear posicion del enemigo
     for e in range(cantidad_enemigos):
 
+        hay_colision_PE = colision(enemigo_x[e], enemigo_y[e],player_x, player_y, "p")
+
         # fin del juego
-        if enemigo_y[e] > 500:
+        if enemigo_y[e] > 800:
             for k in range(cantidad_enemigos):
                 enemigo_y[k] = 1000
 
+            mixer.music.stop()
             texto_final()
             break
+        elif hay_colision_PE: # chequeo de colision player/enemigo
+            sonido_colision = mixer.Sound("./day 10/explosion.mp3")
+            sonido_colision.play()
+
+            for k in range(cantidad_enemigos):
+                enemigo_y[k] = 1000
+                
+            mixer.music.stop()
+            texto_final()
+            break
+
         enemigo_x[e] += enemigo_x_cambio[e]
 
         # limito posicion dentro de pantalla del enemigo
@@ -158,12 +185,12 @@ while se_ejecuta:
             enemigo_x_cambio[e] = -1.5
             enemigo_y[e] += enemigo_y_cambio[e]
 
-        # chequeo de colision 
-        hay_colision = colision(enemigo_x[e], enemigo_y[e],bala_x, bala_y)
-        if hay_colision:
+        # chequeo de colision bala/enemigo
+        hay_colision_BE = colision(enemigo_x[e], enemigo_y[e],bala_x, bala_y, "b")
+        if hay_colision_BE:
             sonido_colision = mixer.Sound("./day 10/golpe.mp3")
             sonido_colision.play()
-            bala_y = 500
+            bala_y = 510
             visibilidad_bala = False
             puntaje += 10
             enemigo_x[e] = random.randint(0, 736)
@@ -173,7 +200,7 @@ while se_ejecuta:
 
     # limitacion de pantalla para bala
     if bala_y <= -64:
-        bala_y = 500
+        bala_y = 510 
         visibilidad_bala = False
 
     # movimiento bala
