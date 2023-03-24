@@ -31,7 +31,7 @@ enemigo_x = []
 enemigo_y = []
 enemigo_x_cambio = []
 enemigo_y_cambio = []
-cantidad_enemigos = 20
+cantidad_enemigos = 8
 
 for enemigo in range(cantidad_enemigos):
     img_enemigo.append(pygame.image.load("./day 10/enemigo.png"))
