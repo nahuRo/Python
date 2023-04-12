@@ -1,12 +1,19 @@
 from tkinter import *
+import random
+import datetime
+from tkinter import filedialog, messagebox
+
 
 operador = ''
+precios_comida = [1250, 1450, 1650, 1850, 2050, 2250, 2450, 2650]
+precios_postres = [1200, 1400, 1600, 1800, 2000, 2200, 2400, 2600]
+precios_bebidas = [1050, 950, 850, 750, 650, 1150, 1250, 1350]
+
 def click_btn_cal(num):
     global operador
     operador = operador + num
     visor_calculadora.delete(0, END)
     visor_calculadora.insert(END, operador)
-
 
 def borrar():
     global operador
@@ -19,6 +26,154 @@ def obtener_resultado():
     visor_calculadora.delete(0, END)
     visor_calculadora.insert(0, resultado)
     operador = ''
+
+def revisar_check():
+    x = 0
+    for c in cuadro_comidas:
+        if var_comidas[x].get() == 1:
+            cuadro_comidas[x].config(state=NORMAL)
+            if cuadro_comidas[x].get() == '0':
+                cuadro_comidas[x].delete(0, END)
+            cuadro_comidas[x].focus()
+        else:
+            cuadro_comidas[x].config(state=DISABLED)
+            texto_comidas[x].set('0')
+        x += 1
+
+    x = 0
+    for c in cuadro_bebidas:
+        if var_bebidas[x].get() == 1:
+            cuadro_bebidas[x].config(state=NORMAL)
+            if cuadro_bebidas[x].get() == '0':
+                cuadro_bebidas[x].delete(0, END)
+            cuadro_bebidas[x].focus()
+        else:
+            cuadro_bebidas[x].config(state=DISABLED)
+            texto_bebidas[x].set('0')
+        x += 1
+
+    x = 0
+    for c in cuadro_postres:
+        if var_postres[x].get() == 1:
+            cuadro_postres[x].config(state=NORMAL)
+            if cuadro_postres[x].get() == '0':
+                cuadro_postres[x].delete(0, END)
+            cuadro_postres[x].focus()
+        else:
+            cuadro_postres[x].config(state=DISABLED)
+            texto_postres[x].set('0')
+        x += 1
+
+def get_total():
+    sub_total_comida = 0 
+    p = 0
+    for cantidad in texto_comidas:
+        sub_total_comida = sub_total_comida + (float(cantidad.get()) * precios_comida[p])
+        p += 1
+
+    sub_total_bebidas = 0 
+    p = 0
+    for cantidad in texto_bebidas:
+        sub_total_bebidas = sub_total_bebidas + (float(cantidad.get()) * precios_bebidas[p])
+        p += 1
+
+    sub_total_postres = 0 
+    p = 0
+    for cantidad in texto_postres:
+        sub_total_postres = sub_total_postres + (float(cantidad.get()) * precios_postres[p])
+        p += 1
+
+    sub_total = sub_total_comida + sub_total_bebidas + sub_total_postres
+    impuestos = sub_total * 0.07
+    total = sub_total + impuestos
+
+    var_costo_comida.set(f'$ {round(sub_total_comida, 2)}')
+    var_costo_bebida.set(f'$ {round(sub_total_bebidas, 2)}')
+    var_costo_postre.set(f'$ {round(sub_total_postres, 2)}')
+    var_subtotal.set(f'$ {round(sub_total)}')
+    var_impuesto.set(f'$ {round(impuestos)}')
+    var_total.set(f'$ {round(total)}')
+
+def get_recibo():
+    texto_recibo.delete(1.0, END)
+    num_recibo = f'N# - {random.randint(1000,9999)}'
+    fecha = datetime.datetime.now()
+    fecha_recibo = f'{fecha.day}/{fecha.month}/{fecha.year} - {fecha.hour}:{fecha.minute}'
+    texto_recibo.insert(END, f'Datos:\t{num_recibo}\t\t{fecha_recibo}\n')
+    texto_recibo.insert(END, f'*' * 47 + '\n')
+    texto_recibo.insert(END, 'Items\t\tCant.\tCostoItems\n')
+    texto_recibo.insert(END, f'-' * 54 + '\n')
+
+    x = 0
+    for comida in texto_comidas:
+        if comida.get() != '0':
+            texto_recibo.insert(END, f'{lista_comidas[x]}\t\t{comida.get()}\t{int(comida.get()) * precios_comida[x]}\n')
+        x += 1
+
+    x = 0
+    for bebida in texto_bebidas:
+        if bebida.get() != '0':
+            texto_recibo.insert(END, f'{lista_bebidas[x]}\t\t{bebida.get()}\t{int(bebida.get()) * precios_bebidas[x]}\n')
+        x += 1
+
+    x = 0
+    for postre in texto_postres:
+        if postre.get() != '0':
+            texto_recibo.insert(END, f'{lista_postres[x]}\t\t{postre.get()}\t{int(postre.get()) * precios_postres[x]}\n')
+        x += 1
+    
+    texto_recibo.insert(END, f'-' * 54 + '\n')
+    texto_recibo.insert(END, f'Costo de la Comida: \t\t\t {var_costo_comida.get()}\n')
+    texto_recibo.insert(END, f'Costo de la Bebida: \t\t\t {var_costo_bebida.get()}\n')
+    texto_recibo.insert(END, f'Costo de los Postres: \t\t\t {var_costo_postre.get()}\n')
+    texto_recibo.insert(END, f'-' * 54 + '\n')
+    texto_recibo.insert(END, f'Sub-total: \t\t\t {var_subtotal.get()}\n')
+    texto_recibo.insert(END, f'Impuestos: \t\t\t {var_impuesto.get()}\n')
+    texto_recibo.insert(END, f'Total: \t\t\t {var_total.get()}\n')
+    texto_recibo.insert(END, f'-' * 54 + '\n')
+    texto_recibo.insert(END, 'Lo esperamos pronto')
+
+def guardar():
+    info_recibo = texto_recibo.get(1.0, END)
+    archivo = filedialog.asksaveasfile(mode='w', defaultextension='.txt')
+    archivo.write(info_recibo)
+    archivo.close()
+    messagebox.showinfo('Informacion','Su recibo ha sido guardado')
+
+def resetear():
+    texto_recibo.delete(0.1, END)
+    # borro la cantidad en el input de cada producto
+    for texto in texto_comidas:
+        texto.set('0')
+    for texto in texto_bebidas:
+        texto.set('0')
+    for texto in texto_postres:
+        texto.set('0')
+
+    # quito el focus de los checkbox
+    for cuadro in cuadro_comidas:
+        cuadro.config(state=DISABLED)
+    for cuadro in cuadro_bebidas:
+        cuadro.config(state=DISABLED)
+    for cuadro in cuadro_postres:
+        cuadro.config(state=DISABLED)
+
+    # destilo el checkbox
+    for var in var_comidas:
+        var.set(0)
+    for var in var_bebidas:
+        var.set(0)
+    for var in var_postres:
+        var.set(0)
+
+    # borro cuadros de subtota, impuestos, total ...
+    var_costo_comida.set('')
+    var_costo_bebida.set('')
+    var_costo_postre.set('')
+    var_subtotal.set('')
+    var_impuesto.set('')
+    var_total.set('')
+
 
 # inicio tkinter 
 app = Tk()
@@ -93,7 +248,7 @@ for comida in lista_comidas:
     # creo los ckeckbuttons
     var_comidas.append('')
     var_comidas[contador] = IntVar()
-    item = Checkbutton(panel_comidas, text=comida.title(), font=('Dosis', 19, 'bold'), onvalue=1, offvalue=0, variable=var_comidas[contador])
+    item = Checkbutton(panel_comidas, text=comida.title(), font=('Dosis', 19, 'bold'), onvalue=1, offvalue=0, variable=var_comidas[contador], command=revisar_check)    
     item.grid(row=contador, column=0, sticky=W)
 
     # creo los cuadros de entrada (inputs de cantida)
@@ -117,7 +272,7 @@ for bebida in lista_bebidas:
     # creo los ckeckbuttons
     var_bebidas.append('')
     var_bebidas[contador] = IntVar()
-    item = Checkbutton(panel_bebidas, text=bebida.title(), font=('Dosis', 19, 'bold'), onvalue=1, offvalue=0, variable=var_bebidas[contador])
+    item = Checkbutton(panel_bebidas, text=bebida.title(), font=('Dosis', 19, 'bold'), onvalue=1, offvalue=0, variable=var_bebidas[contador], command=revisar_check)
     item.grid(row=contador, column=0, sticky=W)
 
     # creo los cuadros de entrada (inputs de cantida)
@@ -141,7 +296,7 @@ for postre in lista_postres:
     # creo los ckeckbuttons
     var_postres.append('')
     var_postres[contador] = IntVar()
-    item = Checkbutton(panel_postres, text=postre.title(), font=('Dosis', 19, 'bold'), onvalue=1, offvalue=0, variable=var_postres[contador])
+    item = Checkbutton(panel_postres, text=postre.title(), font=('Dosis', 19, 'bold'), onvalue=1, offvalue=0, variable=var_postres[contador], command=revisar_check)
     item.grid(row=contador, column=0, sticky=W)
 
     # creo los cuadros de entrada (inputs de cantida)
@@ -155,8 +310,6 @@ for postre in lista_postres:
     cuadro_postres[contador].grid(row=contador, column=1, sticky=W)
 
     contador += 1
-
-
 
 # etiquetas de costo y campos de entrada
 
@@ -213,14 +366,21 @@ texto_total.grid(row=2, column=3, padx=41)
 # ----
 # botones 
 botones =['total', 'recibo', 'guardar', 'resetear']
+botones_creados = []
 columnas = 0
 for boton in botones:
     boton = Button(panel_botones, text=boton.title(), font=('Dosis', 14, 'bold'), fg='white', bg='azure4', bd=1, width=9)
+    botones_creados.append(boton)
     boton.grid(row=0, column=columnas)
     columnas += 1
 
+botones_creados[0].config(command=get_total)
+botones_creados[1].config(command=get_recibo)
+botones_creados[2].config(command=guardar)
+botones_creados[3].config(command=resetear)
+
 # area de recibo
-texto_recibo = Text(panel_recibo, font=('Dosis',12, 'bold'), bd=1, width=42, height=10)
+texto_recibo = Text(panel_recibo, font=('Dosis',12, 'bold'), bd=1, width=49, height=10)
 texto_recibo.grid(row=0, column=0)
 
 # ----
@@ -267,4 +427,4 @@ botones_guardados[14].config(command=lambda: click_btn_cal('0'))
 botones_guardados[15].config(command=lambda: click_btn_cal('/'))
 
 # evito que la pantalla se cierre
-app.mainloop()
+app.mainloop() 
